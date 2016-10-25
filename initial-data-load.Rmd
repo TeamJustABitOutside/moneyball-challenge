@@ -1,0 +1,49 @@
+---
+title: "Initial Data Load"
+author: "Scott Sutherland"
+date: "October 24, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import Challenge Data
+
+Load the challenge data from the xlsx file into a variable named `mb`
+
+```{r load, include=FALSE}
+library(readxl)
+library(feather)
+setwd('~/src/moneyball-challenge')
+mb <- readxl::read_excel('protected-data/MLB_Challenge_Data updated 10-21-16.xlsx',na = "NA")
+```
+
+```{r mbDimensions}
+dim(mb)
+```
+
+## Split test and training sets
+
+Split the test and training sets into distinct variables
+
+```{r split}
+attach(mb)
+test <- (is.na(ACTUAL_PTS))
+mb.test <- mb[test,]
+nrow(mb.test)
+mb.train <- mb[!test,]
+nrow(mb.train)
+```
+
+# Store the test and train sets
+
+Write the test and train sets to the protected-data directory for consumption by other processes.
+
+```{r save}
+write_feather(mb.test, 'protected-data/mb.test.feather')
+write_feather(mb.train, 'protected-data/mb.train.feather')
+```
+
+We can now use the test and training sets individually.
