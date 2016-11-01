@@ -1,0 +1,35 @@
+---
+title: "ColumnPartitioning"
+author: "Scott Sutherland"
+date: "October 25, 2016"
+output: html_document
+---
+
+```{r child='initial-data-load.Rmd'}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Manipulation Requirements
+
+```{r load_libraries}
+library(feather)
+library(dplyr)
+library(tidyr)
+```
+
+# Establish the Partitions
+
+There are several types of data in the test and train sets. There are actual values associated with the given game such as altitude, weather, etc. There are actual values associated with four years historic information such as head to head details. There are other values assocaited with "hitter guy like you" vs the current pitcher and "pitcher guy like you" vs the current hitter. There are trend data for the hitter and pitcher, etc.
+
+I am going to attempt to create distinct files for the various types as I intuit that the treatment of these data types will need to be handled distinctly.
+
+```{r split_game_details}
+mb_game_data <- select(mb, RECORDNUM, 
+                       ACTUAL_PTS, Week, DayNight, 
+                       HitterStatus, PlayToday_Likelihood, 
+                       `Hitter Pos`, `Fanduel Pos`, BOP, 
+                       HitterHomeAway, PitcherSide, `Hitter-Pitcher B-T`) %>%
+  arrange(desc(ACTUAL_PTS))
+summarise(group_by(mb_game_data, `Hitter Pos`, avg_pts_by_pos = mean(ACTUAL_PTS, na.rm = TRUE)))
+```
+
