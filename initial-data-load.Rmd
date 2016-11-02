@@ -16,8 +16,9 @@ Load the challenge data from the xlsx file into a variable named `mb`
 ```{r load, include=FALSE}
 library(readxl)
 library(feather)
+library(dplyr)
 setwd('~/src/moneyball-challenge')
-mb <- readxl::read_excel('protected-data/MLB_Challenge_Data updated 10-21-16.xlsx',na = "NA")
+mb <- tbl_df(read.csv('protected-data/MLB_Challenge_Data 2015 upd 11-2-16.csv', stringsAsFactors = FALSE, na.strings = "NA"))
 ```
 
 ```{r mbDimensions}
@@ -30,7 +31,7 @@ Split the test and training sets into distinct variables
 
 ```{r split}
 attach(mb)
-test <- (is.na(ACTUAL_PTS))
+test <- (is.na(Actual_PTS))
 mb.test <- mb[test,]
 nrow(mb.test)
 mb.train <- mb[!test,]
