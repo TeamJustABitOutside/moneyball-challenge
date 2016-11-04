@@ -1,0 +1,68 @@
+---
+title: "Data Exploration"
+author: "Scott Sutherland"
+date: "November 4, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Manipulation Requirements
+
+```{r load_libraries}
+library(feather)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+setwd('~/src/moneyball-challenge')
+mb.train <- read_feather('protected-data/mb.train.feather')
+mb.test <- read_feather('protected-data/mb.test.feather')
+```
+
+# Points Scored by PlayToday_Likelihood
+
+```{r by_PlayToday_Likelihood}
+summary_by_PlayToday_Likelihood <- group_by(mb.train, PlayToday_Likelihood) %>%
+  summarize(count = n(), train_pct = (count / nrow(mb.train)) * 100, avg_pts = mean(Actual_PTS))
+
+test_summary_by_PlayToday_Likelihood <- group_by(mb.test, PlayToday_Likelihood) %>%
+  summarize(test_count = n(), test_pct = (test_count / nrow(mb.test)) * 100)
+
+combined_summary <- left_join(summary_by_PlayToday_Likelihood, test_summary_by_PlayToday_Likelihood)
+knitr::kable(combined_summary)
+
+ggplot(combined_summary, aes(PlayToday_Likelihood, avg_pts)) +
+  geom_point(aes(size = count), alpha = 1/2) +
+  scale_size_area()
+```
+
+# Points scored by Position
+
+```{r by_Hitter.Pos}
+summary_by_Hitter.Pos <- group_by(mb.train, Hitter.Pos) %>%
+  summarize(count = n(), avg_pts = mean(Actual_PTS))
+
+knitr::kable(summary_by_Hitter.Pos)
+
+ggplot(summary_by_Hitter.Pos, aes(Hitter.Pos, avg_pts)) +
+  geom_point(aes(size = count), alpha = 1/2) +
+  scale_size_area()
+```
+
+## Look at specific positions
+
+```{r by_Hitter.Pos_is_SS}
+summary_by_hitter_is_ss <- filter(mb.train, Hitter.Pos == 'SS') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_ss, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
