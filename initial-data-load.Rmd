@@ -25,6 +25,72 @@ mb <- tbl_df(read.csv('protected-data/MLB_Challenge_Data 2015 upd 11-2-16.csv', 
 dim(mb)
 ```
 
+# Perform some column interpretation
+
+The DayNight column has either a 'D' for day or 'N' for night. We are going to convert that to an 'at_night' indicator with 1 indicating a night game. We also split the HitterStatus column into three indicators game.status.available, game.status.dl, and game.status.brv.
+
+```{r convertDayNightToIndicator, include=FALSE}
+mb <- mutate(mb, game.at_night = DayNight == "N",
+             game.status.available = HitterStatus == "A",
+             game.status.dl = HitterStatus == "D7" || HitterStatus == "D15",
+             game.status.brv = HitterStatus == "BRV",
+             game.in_linup.high = PlayToday_Likelihood == "HIGH",
+             game.in_linup.low = PlayToday_Likelihood == "LOW",
+             game.in_linup.unsure = PlayToday_Likelihood == "UNSURE",
+             game.hitter.1b = Hitter.Pos == "1B",
+             game.hitter.2b = Hitter.Pos == "2B",
+             game.hitter.3B = Hitter.Pos == "3B",
+             game.hitter.C = Hitter.Pos == "C",
+             game.hitter.CF = Hitter.Pos == "CF",
+             game.hitter.DH = Hitter.Pos == "DH",
+             game.hitter.IF = Hitter.Pos == "IF",
+             game.hitter.LF = Hitter.Pos == "LF",
+             game.hitter.OF = Hitter.Pos == "OF",
+             game.hitter.RF = Hitter.Pos == "RF",
+             game.hitter.SS = Hitter.Pos == "SS",
+             game.hitter.corner_if = Hitter.Pos == "3B" || Hitter.Pos == "1B",
+             game.hitter.outfield = Hitter.Pos == "RF" || Hitter.Pos == "CF" || Hitter.Pos == "LF" || Hitter.Pos == "OF",
+             game.hitter.infield = Hitter.Pos == "1B" || Hitter.Pos == "2B" || Hitter.Pos == "SS" || Hitter.Pos == "3B")
+```
+
+
+# Change the name of some columns
+
+We update all the "general" columns to be prefixed with 'game'
+
+```{r changeGeneralNames, include=FALSE}
+mb <- rename(mb, game.week = Week
+             )
+```
+
+
+We update all the weather related date to have a weather prefix.
+
+```{r changeWeatherNames, include=FALSE}
+mb <- rename(mb, weather.humidity = humidity,
+             weather.pressure = pressure,
+             weather.condition = condition,
+             weather.temperature = temp,
+             weather.change.of.rain = chanceofrain,
+             weather.out.to.left.impact = outtoleftimpact,
+             weather.out.to.right.impact = outtorightimpact)
+```
+
+We update the head 2 head names to prefix with 'h2h'. e.g. The `PA.H2H` column becomes `h2h.pa`.
+
+```{r changeH2HNames, include=FALSE}
+mb <- rename(mb, h2h.pa = PA.H2H,
+             h2h.hits = H.H2H,
+             h2h.ab = AB.H2H,
+             h2h.bavg = BAVG.H2H,
+             h2h.slg = SLG.H2H,
+             h2h.hr = HR.H2H,
+             h2h.woba = wOBA.H2H,
+             h2h.so = SO.H2H,
+             h2h.well.hit.avg = WHAvg.H2H)
+```
+
+
 ## Split test and training sets
 
 Split the test and training sets into distinct variables

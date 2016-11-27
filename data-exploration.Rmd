@@ -25,17 +25,22 @@ mb.test <- read_feather('protected-data/mb.test.feather')
 # Points Scored by PlayToday_Likelihood
 
 ```{r by_PlayToday_Likelihood}
-summary_by_PlayToday_Likelihood <- group_by(mb.train, PlayToday_Likelihood) %>%
-  summarize(count = n(), train_pct = (count / nrow(mb.train)) * 100, avg_pts = mean(Actual_PTS))
+avg_pts_and_distribution_pct <- . %>%
+  group_by(PlayToday_Likelihood) %>%
+  summarize(count = n(), dist_pct = (count / nrow(.)) * 100, avg_pts = mean(Actual_PTS))
 
-test_summary_by_PlayToday_Likelihood <- group_by(mb.test, PlayToday_Likelihood) %>%
-  summarize(test_count = n(), test_pct = (test_count / nrow(mb.test)) * 100)
+summary_by_PlayToday_Likelihood <- mb.train %>% avg_pts_and_distribution_pct()
 
-combined_summary <- left_join(summary_by_PlayToday_Likelihood, test_summary_by_PlayToday_Likelihood)
+test_summary_by_PlayToday_Likelihood <- mb.test %>% avg_pts_and_distribution_pct()
+
+combined_summary <- left_join(summary_by_PlayToday_Likelihood,
+                              test_summary_by_PlayToday_Likelihood,
+                              by = c("PlayToday_Likelihood"),
+                              suffix = c(".train", ".test"))
 knitr::kable(combined_summary)
 
-ggplot(combined_summary, aes(PlayToday_Likelihood, avg_pts)) +
-  geom_point(aes(size = count), alpha = 1/2) +
+ggplot(combined_summary, aes(PlayToday_Likelihood, avg_pts.train)) +
+  geom_point(aes(size = count.train), alpha = 1/2) +
   scale_size_area()
 ```
 
@@ -54,6 +59,64 @@ ggplot(summary_by_Hitter.Pos, aes(Hitter.Pos, avg_pts)) +
 
 ## Look at specific positions
 
+### Catcher
+
+```{r by_Hitter.Pos_is_C}
+summary_by_hitter_is_c <- filter(mb.train, Hitter.Pos == 'C') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_c, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### First Base
+
+```{r by_Hitter.Pos_is_1B}
+summary_by_hitter_is_1b <- filter(mb.train, Hitter.Pos == '1B') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_1b, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Second Base
+
+```{r by_Hitter.Pos_is_2B}
+summary_by_hitter_is_2b <- filter(mb.train, Hitter.Pos == '2B') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_2b, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Third Base
+
+```{r by_Hitter.Pos_is_3B}
+summary_by_hitter_is_3b <- filter(mb.train, Hitter.Pos == '3B') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_3b, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Short Stop
+
 ```{r by_Hitter.Pos_is_SS}
 summary_by_hitter_is_ss <- filter(mb.train, Hitter.Pos == 'SS') %>%
   group_by(Week, Actual_PTS) %>%
@@ -66,3 +129,114 @@ ggplot(summary_by_hitter_is_ss, aes(Week, Actual_PTS)) +
 
 ```
 
+### Infield
+
+```{r by_Hitter.Pos_is_IF}
+summary_by_hitter_is_if <- filter(mb.train, Hitter.Pos == 'IF') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_if, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Left field
+
+```{r by_Hitter.Pos_is_LF}
+summary_by_hitter_is_lf <- filter(mb.train, Hitter.Pos == 'LF') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_lf, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Center field
+
+```{r by_Hitter.Pos_is_CF}
+summary_by_hitter_is_cf <- filter(mb.train, Hitter.Pos == 'CF') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_cf, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Right field
+
+```{r by_Hitter.Pos_is_RF}
+summary_by_hitter_is_rf <- filter(mb.train, Hitter.Pos == 'RF') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_rf, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Outfield
+
+```{r by_Hitter.Pos_is_OF}
+summary_by_hitter_is_of <- filter(mb.train, Hitter.Pos == 'OF') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_of, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+### Designated Hitter
+
+```{r by_Hitter.Pos_is_DH}
+summary_by_hitter_is_dh <- filter(mb.train, Hitter.Pos == 'DH') %>%
+  group_by(Week, Actual_PTS) %>%
+  summarise(count = n())
+
+ggplot(summary_by_hitter_is_dh, aes(Week, Actual_PTS)) +
+  geom_point(aes(size = count)) +
+  geom_smooth()
+  scale_size_area()
+
+```
+
+## Points scored by HitterGLYCategory
+
+```{r by_HitterGLYCategory}
+summary_by_hitter_gly_category <- group_by(mb.train, HitterGLYCategory) %>%
+  summarize(count = n(), avg_pts = mean(Actual_PTS))
+
+knitr::kable(summary_by_hitter_gly_category)
+
+ggplot(summary_by_hitter_gly_category, aes(HitterGLYCategory, avg_pts)) +
+  geom_point(aes(size = count), alpha = 1/2) +
+  scale_size_area()
+```
+
+## Distribution of points by position
+
+```{r points_by_position, render=FALSE}
+points_by_position <- tbl_df(select(mb.train, Actual_PTS, Hitter.Pos) %>%
+  group_by(Actual_PTS, Hitter.Pos) %>%
+  summarise(count = n()))
+
+points_by_position$scaled_count <- scale(points_by_position$count, scale = TRUE)
+
+ggplot(points_by_position, aes(Actual_PTS, colour = Hitter.Pos)) +
+#  geom_line(aes(y=scaled_count)) +
+  geom_density() +
+  scale_size_area()
+```
