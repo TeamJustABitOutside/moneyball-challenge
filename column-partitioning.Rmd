@@ -24,8 +24,10 @@ There are several types of data in the test and train sets. There are actual val
 I am going to attempt to create distinct files for the various types as I intuit that the treatment of these data types will need to be handled distinctly.
 
 ```{r split_game_details}
-mb_game_data <- select(mb.train, RECORDNUM, Actual_PTS, Week, DayNight, HitterStatus, PlayToday_Likelihood, Hitter.Pos, Fanduel.Pos, BOP, HitterHomeAway, PitcherSide, Hitter.Pitcher.B.T, PitcherSOTend, HitterGLYCategory, PitcherPcntlGroup, HitterPcntlGroup, PitcherGLYCategory, PitcherGB_FLY, PA.H2H, H.H2H, AB.H2H, BAVG.H2H, SLG.H2H, HR.H2H, wOBA.H2H, SO.H2H, WHAvg.H2H, H2H.MU.SCORE, PGLY.MU.SCORE, PTier.MU.SCORE, HGLY.MU.SCORE, SO_Tend.MU.SCORE, GB_Tend.MU.SCORE, Last5.MU.SCORE, HomeAway.MU.SCORE, HomeAway.MU.SCORE...Pitcher, MatchupScore3, Normalized.MU3, humidity, pressure, condition, temp, chanceofrain, outtoleftimpact,  outtorightimpact, elevation, roof, Park.Adj) %>%
-  arrange(desc(Actual_PTS))
-summarise(group_by(mb_game_data, Hitter.Pos, avg_pts_by_pos = mean(Actual_PTS, na.rm = TRUE)))
-```
+mb_game_data <- select(mb.train, RECORDNUM, Hitter.Pos, starts_with("game"), PitcherSOTend, HitterGLYCategory, PitcherPcntlGroup, HitterPcntlGroup, PitcherGLYCategory, PitcherGB_FLY, starts_with("h2h"), H2H.MU.SCORE, PGLY.MU.SCORE, PTier.MU.SCORE, HGLY.MU.SCORE, SO_Tend.MU.SCORE, GB_Tend.MU.SCORE, Last5.MU.SCORE, HomeAway.MU.SCORE, HomeAway.MU.SCORE...Pitcher, MatchupScore3, Normalized.MU3, starts_with("weather"), elevation, roof, Park.Adj)
+mb_actual_pts <- select(mb.train, RECORDNUM, Actual_PTS)
 
+m <- lm(Actual_PTS ~ game.status.available, mb_game_data)
+
+summary(m)
+```
