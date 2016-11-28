@@ -27,30 +27,82 @@ dim(mb)
 
 # Perform some column interpretation
 
-The DayNight column has either a 'D' for day or 'N' for night. We are going to convert that to an 'at_night' indicator with 1 indicating a night game. We also split the HitterStatus column into three indicators game.status.available, game.status.dl, and game.status.brv.
+The DayNight column has either a 'D' for day or 'N' for night. We are going to convert that to an 'at_night' indicator with 1 indicating a night game.
 
-```{r convertDayNightToIndicator, include=FALSE}
-mb <- mutate(mb, game.at_night = DayNight == "N",
-             game.status.available = HitterStatus == "A",
-             game.status.dl = HitterStatus == "D7" || HitterStatus == "D15",
-             game.status.brv = HitterStatus == "BRV",
-             game.in_linup.high = PlayToday_Likelihood == "HIGH",
+```{r convertDayNightToIndicator}
+mb <- mutate(mb, game.at_night = DayNight == "N")
+```
+
+The `HitterStatus` column is split into three indicators `game.status.available`, `game.status.dl`, and `game.status.brv`.
+
+```{r convertHitterStatusToIndicator}
+mb <- mutate(mb, game.status.available = HitterStatus == "A",
+             game.status.dl = startsWith(HitterStatus, "D"),
+             game.status.brv = HitterStatus == "BRV")
+```
+
+The `PlayToday_Likelihood` column is split into three indicators `game.in_lineup_high`, `game.in_lineup_low`, and `game.in_lineup_unsure`.
+
+```{r convertPlayToday_LikelihoodToIndicator}
+mb <- mutate(mb, game.in_linup.high = PlayToday_Likelihood == "HIGH",
              game.in_linup.low = PlayToday_Likelihood == "LOW",
-             game.in_linup.unsure = PlayToday_Likelihood == "UNSURE",
-             game.hitter.1b = Hitter.Pos == "1B",
+             game.in_linup.unsure = PlayToday_Likelihood == "UNSURE")
+```
+
+The `Hitter.Pos` and `Fanduel.Pos` columns have been split into `game.hitter.<POS>` and `game.hitter.fanduel.<POS>` for all available position values as well as `game.hitter.corner_if` comprised of first and third basemen, `game.hitter.outfield` comprised of left, right, center field, and `game.hitter.infield` comprised of first, second, third, and shortstop.
+
+```{r convertHitter.PosToIndicators}
+mb <- mutate(mb, game.hitter.1b = Hitter.Pos == "1B",
              game.hitter.2b = Hitter.Pos == "2B",
-             game.hitter.3B = Hitter.Pos == "3B",
-             game.hitter.C = Hitter.Pos == "C",
-             game.hitter.CF = Hitter.Pos == "CF",
-             game.hitter.DH = Hitter.Pos == "DH",
-             game.hitter.IF = Hitter.Pos == "IF",
-             game.hitter.LF = Hitter.Pos == "LF",
-             game.hitter.OF = Hitter.Pos == "OF",
-             game.hitter.RF = Hitter.Pos == "RF",
-             game.hitter.SS = Hitter.Pos == "SS",
+             game.hitter.3b = Hitter.Pos == "3B",
+             game.hitter.c = Hitter.Pos == "C",
+             game.hitter.cf = Hitter.Pos == "CF",
+             game.hitter.dh = Hitter.Pos == "DH",
+             game.hitter.if = Hitter.Pos == "IF",
+             game.hitter.lf = Hitter.Pos == "LF",
+             game.hitter.of = Hitter.Pos == "OF",
+             game.hitter.rf = Hitter.Pos == "RF",
+             game.hitter.ss = Hitter.Pos == "SS",
              game.hitter.corner_if = Hitter.Pos == "3B" || Hitter.Pos == "1B",
-             game.hitter.outfield = Hitter.Pos == "RF" || Hitter.Pos == "CF" || Hitter.Pos == "LF" || Hitter.Pos == "OF",
+             game.hitter.outfield = Hitter.Pos == "RF" || Hitter.Pos == "CF" || Hitter.Pos == "LF",
              game.hitter.infield = Hitter.Pos == "1B" || Hitter.Pos == "2B" || Hitter.Pos == "SS" || Hitter.Pos == "3B")
+
+mb <- mutate(mb, game.hitter.fanduel.1b = Fanduel.Pos == "1B",
+             game.hitter.fanduel.2b = Fanduel.Pos == "2B",
+             game.hitter.fanduel.3b = Fanduel.Pos == "3B",
+             game.hitter.fanduel.c = Fanduel.Pos == "C",
+             game.hitter.fanduel.of = Fanduel.Pos == "OF",
+             game.hitter.fanduel.ss = Fanduel.Pos == "SS")
+```
+
+The `PitcherSide` column is converter into `game.pitcher.is_lefty` if the pitcher is left hand dominant.
+
+```{r convertPitcherSideToIndicator}
+mb <- mutate(mb, game.pitcher.is_lefty = PitcherSide == "L")
+```
+
+The `Hitter.Pitcher.B.T` column is split into the nine combinations of right, left, and switch batter and pitcher combinations called `game.matchup.<hitter-side>.<pitcher-side>`. Additionally, we created `game.matchup.on_power_side` where the matchup was dominant hitter side on dominant pitcher side, `game.matchup.switch_hitter` where a switch hitter was in the matchup, and `game.matchup.switch_pitcher` where a switch pitcher was in the matchup.
+
+```{r convertHitter.Pitcher.B.TToIndicator}
+mb <- mutate(mb, game.matchup.switch.switch = Hitter.Pitcher.B.T == "BHB-BHP",
+             game.matchup.switch.lefty = Hitter.Pitcher.B.T == "BHB-LHP",
+             game.matchup.switch.righty = Hitter.Pitcher.B.T == "BHB-RHP",
+             game.matchup.lefty.switch = Hitter.Pitcher.B.T == "LHB-BHP",
+             game.matchup.lefty.lefty = Hitter.Pitcher.B.T == "LHB-LHP",
+             game.matchup.lefty.righty = Hitter.Pitcher.B.T == "LHB-RHP",
+             game.matchup.righty.switch = Hitter.Pitcher.B.T == "RHB-BHP",
+             game.matchup.righty.lefty = Hitter.Pitcher.B.T == "RHB-LHP",
+             game.matchup.righty.righty = Hitter.Pitcher.B.T == "RHB-RHP",
+             game.matchup.on_power_side = Hitter.Pitcher.B.T == "RHB-RHP" || Hitter.Pitcher.B.T == "LHB-LHP",
+             game.matchup.switch_hitter = startsWith(Hitter.Pitcher.B.T, "BHB"),
+             game.matchup.switch_pitcher = endsWith(Hitter.Pitcher.B.T, "BHP"))
+```
+
+The season is broken down into three sections `game.week.early` for the first four weeks, `game.week.callups` for the last four weeks.
+
+```{r}
+mb <- mutate(mb, game.week.early = Week <= 4,
+             game.week.callups = Week >= 24)
 ```
 
 
@@ -59,12 +111,13 @@ mb <- mutate(mb, game.at_night = DayNight == "N",
 We update all the "general" columns to be prefixed with 'game'
 
 ```{r changeGeneralNames, include=FALSE}
-mb <- rename(mb, game.week = Week
+mb <- rename(mb, game.week = Week,
+             game.bop = BOP
              )
 ```
 
 
-We update all the weather related date to have a weather prefix.
+We update all the weather related data to have a weather prefix.
 
 ```{r changeWeatherNames, include=FALSE}
 mb <- rename(mb, weather.humidity = humidity,
@@ -89,6 +142,7 @@ mb <- rename(mb, h2h.pa = PA.H2H,
              h2h.so = SO.H2H,
              h2h.well.hit.avg = WHAvg.H2H)
 ```
+
 
 
 ## Split test and training sets
